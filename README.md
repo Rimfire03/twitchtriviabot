@@ -1,93 +1,94 @@
-# Twitch Trivia Bot
+# Twitch Trivia Bot [fr]
 
-Twitch Trivia Bot (TTB) is a Python script to run a trivia session in Twitch chat. The bot will load a quiz set, run a session of trivia, assign a winner and save scores dynamically. 
+Le Twitch Trivia Bot (TTB) est un script Python conçu pour organiser une session de quiz dans le chat Twitch. Le bot charge un ensemble de questions, anime une session de quiz, désigne un gagnant et enregistre les scores de manière dynamique. 
 
 ![img](https://i.imgur.com/YYznPaN.png)
 
-# Features:
-+ Loads csv files for trivia questions, and answers, and handles any amount of questions (limited only by csv constraints)
-+ Dynamically selects a random set of questions from the pool of questions
-+ Automatically asks questions, generates dynamic hints, and skips questions based on configurable time delays
-+ BONUS mode, allowing for extra points to be rewarded
-+ Stores trivia performance over multiple sessions, allowing participants to retrieve scores at any time
-+ Trivia sessions cut short by bot disconnect can be reloaded via actively created backups
+# Fonctionnalités :
++ Charge des fichiers CSV contenant des questions et réponses de quiz, et gère n'importe quelle quantité de questions (limitée uniquement par les contraintes des fichiers CSV)
++ Sélectionne dynamiquement un ensemble de questions aléatoires dans la réserve de questions.
++ Pose automatiquement des questions, génère des indices dynamiques et passe les questions en fonction de délais configurables
++ Mode BONUS, permettant d'attribuer des points supplémentaires.
++ Enregistre les performances des participants aux quiz sur plusieurs sessions, permettant à ces derniers de consulter leurs scores à tout moment.
++ Les sessions de quiz interrompues par une déconnexion du bot peuvent être rechargées grâce aux sauvegardes créées en temps réel.
 
-# Setup
-The latest Python 3 install is required for this bot. You will need to install Python 3 to be able to run. One can either use standard Python 3 distribution with IDLE, or use something like the Anaconda distribution with Spyder (what I use). 
+# Configuration :
+La dernière version de Python 3 est nécessaire pour ce bot. Vous devrez installer Python 3 afin de pouvoir l'exécuter. Vous pouvez soit utiliser la distribution standard de Python 3 avec IDLE, soit opter pour quelque chose comme la distribution Anaconda avec Spyder (ce que j'utilise).
 
-You will likely need to install a few dependencies, including `PyYaml` and `PyQt5`. You can do this via command line `pip install [x]` or `pip3 install [x]` (e.g. "pip install PyYaml"). On your first few runs if the program/GUI does not load, make sure to check `config/output_log.log` to read the error codes to identify what needs to be installed. 
+Vous devrez probablement installer quelques dépendances, notamment  et . Vous pouvez les installer via la ligne de commande avec  ou  (par exemple, "pip install PyYaml"). Lors des premières exécutions, si le programme ou l'interface graphique (GUI) ne se charge pas, assurez-vous de vérifier  pour lire les codes d'erreur et identifier ce qui doit être installé.
 
-Please use the [latest Release](/releases/latest/) download for initial install. 
+Veuillez utiliser la Dernière Release pour l'installation initiale. 
 
-+ “twitchtriviabot.py” does not need to be reconfigured. This will be loaded via Python console, and will connect to Twitch chat.
-A trivia set file (csv) needs to be set up (more on this below). Default with this package is ‘triviaset.csv’ with the appropriate columns pre-identified. 
-+ “auth_config.yml” and “trivia_config.yml” need to be configured. All inputs should be **without** brackets or number signs. Open these files in a text editor.
-  + Under “trivia_config.yml”, the first two filename & filetype should match the trivia set file (default is ‘triviaset.csv’) All numeric fields represent seconds:
-    + question_count = # of questions for the trivia session to include. This will be pulled randomly for the trivia list from csv. To be clear, this number isn't the number of questions in your trivia set, it's the number of questions you want a trivia session to hold
-    + hint_time1 / hint_time2 = Time delay before hints 1 and 2 are supplied. Hints are described below
-    + skip_time = Time delay before question is skipped. This is also used during `poll` modes for how long to wait before polling
-    + question_delay = Time delay after question is answered, before next question is asked
-    + question_bonusvalue = Value assigned to BONUS round questions. Bonus round described below
-    + mode = There are three settings:
-        + `single` - Standard trivia, first to answer wins the point
-        + `poll` - In this mode, during the entirety of the skip_time, questions are polled for answers from players. At the end of each question, the first and second player to respond earn more points, then all others get some less amount of point
-        + `poll2` - This is the same as above, but every question has a separate answer pool for "answer" and "answer2". This means, for example, one question can have two separate answers, and players can score on each answer separately
-    + music_mode = `true` or `false`. Music mode is a manually-driven mode where the admin can start and stop questions via "Start Q" and "End Q" buttons on the GUI. Instead of loading the trivia set csv file, every question is loaded from `/config/music/artist.txt` and `track.txt`. Questions do not automatically start after their alloted time is up to answer - instead, the admin will manually choose when the next song is ready to be played. 
-        + Functionally, the admin would prepare these artist/track files, start playing the song for their audience, then press "Start Q" when everything is ready. Answers come in, and when the question is done scoring, the system will wait until the admin chooses to start the next song
-        + In the config file, mode `poll2` and length `infinite` must be selected for music_mode `true`
-    + order = `random` or `ordered`. This allows the questions to be answered in order of the original trivia set, or to be chosen randomly. If `ordered` is chosen, likely it is advised to set `question_count` equal to the number of questions in the trivia set, which will yield all questions in order. 
-    + category_distribution = `random` or `distributed`. After the full trivia csv file is loaded, this will decide how to cull down the full set into the desired `question_count` number of questions. `random` will randomly choose the questions, regardless of category. `distributed` will attempt to distribute the categories of questions semi-evenly, meaning that both a sampling method for culling the full set is used, and then averages per category are checked to ensure a decently distributed final trivia session set. 
-    + length = `finite` or `infinite`. When using `infinite`, questions will never stop being asked until the admin chooses to end trivia. Questions are not reshuffled - they will continually be reasked in the same order. `finite` ends trivia after the `question_count` defined above
-    + admins - separate by commas
++ Le fichier “twitchtriviabot.py” n'a pas besoin d'être reconfiguré. Il sera chargé via la console Python et se connectera au chat Twitch.
+Un fichier de questions de quiz (CSV) doit être configuré (plus de détails ci-dessous). Par défaut, ce package inclut « triviaset.csv », avec les colonnes appropriées pré-identifiées
++ Les fichiers « auth_config.yml » et « trivia_config.yml » doivent être configurés. Toutes les entrées doivent être sans crochets ni signes dièse. Ouvrez ces fichiers dans un éditeur de texte.
+  + Dans « trivia_config.yml », les deux premiers champs, filename et filetype, doivent correspondre au fichier de questions de quiz (par défaut, « triviaset.csv »). Tous les champs numériques représentent des durées en secondes.
+    + question_count = # représente le nombre de questions à inclure dans la session de quiz. Ces questions seront sélectionnées aléatoirement à partir de la liste des questions du fichier CSV. Pour être clair, ce chiffre ne correspond pas au nombre total de questions dans votre ensemble de quiz, mais au nombre de questions que vous souhaitez avoir dans une session de quiz.
+    + hint_time1 / hint_time2 = Délai avant que les indices 1 et 2 soient fournis. Les indices sont décrits ci-dessous.
+    + skip_time = Délai avant que la question soit sautée. Ce délai est également utilisé en mode 'poll' pour déterminer combien de temps attendre avant de lancer le sondage.
+    + question_delay = Délai après que la question a été répondue, avant que la question suivante soit posée.
+    + question_bonusvalue = Valeur attribuée aux questions des manches BONUS. La manche BONUS est décrite ci-dessous.
+    + mode = Il y a trois paramètres :
+        + `single` - Quiz standard : le premier à répondre gagne le point.
+        + `poll` - Dans ce mode, pendant toute la durée du skip_time, les questions sont ouvertes aux réponses des joueurs. À la fin de chaque question, les premier et deuxième joueurs à répondre gagnent plus de points, tandis que tous les autres reçoivent un nombre inférieur de points.
+        + `poll2` - C'est similaire au mode précédent, mais chaque question dispose d'un pool de réponses distinct pour "answer" et "answer2". Cela signifie, par exemple, qu'une question peut avoir deux réponses distinctes, et les joueurs peuvent marquer des points séparément pour chaque réponse.
+    + music_mode = `true` or `false`. Le mode Musique est un mode contrôlé manuellement où l'administrateur peut démarrer et arrêter les questions via les boutons "Start Q" et "End Q" sur l'interface graphique (GUI). Au lieu de charger le fichier CSV d'ensemble de quiz, chaque question est chargée depuis les fichiers  `/config/music/artist.txt` et `track.txt`. Les questions ne commencent pas automatiquement après le délai prévu pour y répondre ; à la place, l'administrateur choisira manuellement quand la prochaine chanson est prête à être jouée. 
+        + Fonctionnellement, l'administrateur préparerait ces fichiers artiste/titre, commencerait à jouer la chanson pour son audience, puis appuierait sur "Start Q" lorsque tout est prêt. Les réponses arrivent et, une fois que la question est notée, le système attend que l'administrateur choisisse de lancer la chanson suivante.
+        + Dans le fichier de configuration, les paramètres mode `poll2` et durée `infinite` doivent être sélectionnés pour que music_mode soit défini sur `true`
+    + order = `random` ou `ordered`. Cela permet de répondre aux questions soit dans l'ordre de l'ensemble de quiz d'origine, soit de manière aléatoire. Si `ordered` est choisi, il est conseillé de définir `question_count` égal au nombre de questions dans l'ensemble de quiz, ce qui permettra de présenter toutes les questions dans l'ordre. 
+    + category_distribution = `random` ou `distributed`. Une fois le fichier CSV complet du quiz chargé, cela déterminera comment réduire l'ensemble complet au nombre de questions défini par `question_count` . `random` sélectionnera les questions de manière aléatoire, sans tenir compte des catégories. `distributed` tentera de répartir les catégories de questions de manière semi-équilibrée, en utilisant une méthode d'échantillonnage pour réduire l'ensemble complet, puis en vérifiant les moyennes par catégorie afin de garantir une session finale de quiz raisonnablement distribuée.
+    + length = `finite` ou `infinite`. Lors de l'utilisation de `infinite`, les questions continuent d'être posées indéfiniment jusqu'à ce que l'administrateur décide de terminer la session de quiz. Les questions ne sont pas réorganisées ; elles seront posées continuellement dans le même ordre. En revanche, `finite` met fin à la session de quiz après avoir atteint le nombre de questions défini par `question_count`.
+    + admins - séparé par des virgules
         + E.g., admins = player
         + E.g., admins = player,respondent
   + “auth_config.yml” :
     + host = default irc.twitch.tv
     + port = default 6667 (for twitch)
-    + nick = username for the bot
-    + pass = password in “oath:xxxxxx... “ format. Retrieve from https://twitchapps.com/tmi/ for the bot
-    + chan = twitch channel to connect the bot to, where trivia will take place. This has changed in version 2, where no number sign (#) is needed (i.e. cleartonic). This must match the channel name with capitalizations exactly.
-    + encoding = either `utf-8` or `ISO-8859-1`. Somewhat experimental, default to `utf-8` for safety
+    + nick = nom d'utilisateur pour le bot
+    + pass = Mot de passe au format “oath:xxxxxx...”. À récupérer sur twitchapps.com/tmi pour le bot.
+    + chan = Chaîne Twitch à laquelle connecter le bot, où le quiz aura lieu. Cela a changé dans la version 2, où aucun signe dièse (#) n'est nécessaire (par exemple, cleartonic). Cela doit correspondre exactement au nom de la chaîne avec les mêmes majuscules.
+    + encoding = either `utf-8` ou `ISO-8859-1`.  Un choix quelque peu expérimental, par défaut à `utf-8` plus de sécurité.
 
-To set up triviaset.csv properly, consider the following:
-5 headers in this release are specified: ‘category, ‘question’, ‘answer’, ‘answer2’, ‘creator’. Keep them in this order, but your trivia set does not need to keep the column header. 
-Fill out row by row each question, filling in topic/game, and at least 1 Answer column. Creator and Answer2 are not required fields. 
+Pour configurer correctement le fichier triviaset.csv, prenez en compte les éléments suivants :
+5 en-têtes sont spécifiés dans cette version : ‘category’, ‘question’, ‘answer’, ‘answer2’, ‘creator’. Conservez cet ordre, mais votre ensemble de quiz n'a pas besoin de conserver l'en-tête des colonnes.
+Remplissez ligne par ligne chaque question en renseignant le sujet/jeu, et au moins une colonne Answer. Les champs Creator et Answer2 ne sont pas obligatoires.
 
-A log will be saved per run to `config/output_log.log`. This will accumulate over time, and is useful for debugging problems. At any point, you can delete the log file if it becomes too large. 
+Un journal sera enregistré à chaque exécution dans . Celui-ci s'accumulera au fil du temps et peut être utile pour résoudre des problèmes. À tout moment, vous pouvez supprimer le fichier journal s'il devient trop volumineux 
 
-# Running the bot
+# Lancer le bot
 
-With a command line/terminal open:
-`python twitchtriviabot.py` or `python3 twitchtriviabot.py`
+Avec une ligne de commande ou un terminal ouvert :
 
-From here, you can monitor the bot’s activity. All user responses in the Twitch channel will appear in the console. Each question’s answer will appear in the console. 
+`python twitchtriviabot.py` ou `python3 twitchtriviabot.py`
 
-If you need to close the GUI and stop the program, usually holding Ctrl+C will kill the program in the console/terminal. 
+À partir de là, vous pouvez surveiller l'activité du bot. Toutes les réponses des utilisateurs dans la chaîne Twitch apparaîtront dans la console. La réponse de chaque question apparaîtra également dans la console. 
 
-# Misc. Functionalities
+Si vous devez fermer l'interface graphique et arrêter le programme, maintenir généralement Ctrl+C arrêtera le programme dans la console/terminal.
 
-### Hints and question timing 
+# Fonctionnalités diverses 
 
-All timings can be manually adjusted in trivia_config.yml. By default, after a question is asked, automatically generated hints will trigger (specified by trivia_config.yml). Later, the question will be skipped. After the specified session question limit is hit, the game will end, and a winner will be assigned. 
-+ The first hint replaces 2 out of 3 characters in the answer with “_”
-+ The second hint replaces all vowels with “_”
+### Indices et durée des questions 
+
+Tous les minutages peuvent être ajustés manuellement dans le fichier trivia_config.yml. Par défaut, après qu'une question a été posée, des indices générés automatiquement (spécifiés dans trivia_config.yml) seront activés. Ensuite, la question sera ignorée. Une fois la limite de questions définie pour la session atteinte, le jeu se terminera et un gagnant sera désigné. 
++ Le premier indice remplace 2 caractères sur 3 dans la réponse par des "_".
++ Le deuxième indice remplace toutes les voyelles par des "_".
 
 ### BONUS
 
-Bonus can be activated by an admin via !bonus command. Bonus mode makes questions worth more points, default 3 points (configurable in trivia_config.yml). Can be toggled on/off at any time. 
+Le bonus peut être activé par un administrateur via la commande !bonus. Le mode bonus augmente la valeur des questions, par défaut à 3 points (modifiable dans trivia_config.yml). Il peut être activé ou désactivé à tout moment 
 
 # Commands
-The GUI and these commands below will yield the same results. Some commands are available only during active trivia sessions.
+L'interface graphique (GUI) et les commandes ci-dessous produiront les mêmes résultats. Certaines commandes ne sont disponibles que lors des sessions de quiz actives.
 
 #### Admin only:
-+ !triviastart - Begins a new trivia round with conditions specified in ‘trivia_config.yml’
-+ !triviaend - Ends the trivia round & assigns a win. 
-+ !next/!skip - Skips to the next question. All questions will automatically lapse after enough time specified in ‘trivia_config.yml’, but this allows for manually skipping.
-+ !bonus - Switches questions to bonus mode (toggle on/off)
-+ !stopbot - Severs the bot connection. 
++ !triviastart - Démarre un nouveau quiz avec les conditions définies dans le fichier ‘trivia_config.yml’
++ !triviaend - Met fin à la session de quiz et désigne un gagnant 
++ !next/!skip - Passe à la question suivante. Toutes les questions expirent automatiquement après le délai défini dans le fichier ‘trivia_config.yml’, mais cette commande permet de passer manuellement à la suivante.
++ !bonus - Active ou désactive le mode bonus pour les questions
++ !stopbot - Interrompt la connexion du bot. 
 
 #### All users:
-+ !score - Reports user’s score (reports session score, total score for all trivia, and total wins for all trivia)
++ !score - Affiche le score de l'utilisateur (inclut le score de la session, le score total pour tous les quiz et le nombre total de victoires dans tous les quiz).
 
 # Credits
 Created by [@cleartonic](https://twitter.com/cleartonic)
