@@ -45,7 +45,7 @@ except:
                     level=logging.DEBUG)
         
 
-VERSION_NUM = "2.2.2"
+VERSION_NUM = "2.2.3_fr"
 # INFO_MESSAGE = 'Twitch Trivia Bot loaded. Version %s. Developed by cleartonic. %s' % (VERSION_NUM, random.randint(0,10000))
 INFO_MESSAGE = 'Quizz Twitch chargé.'
 
