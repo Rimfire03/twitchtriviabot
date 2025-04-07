@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 @author: cleartonic
+@author: rimfire03
 """
 import random
 import csv
@@ -46,7 +47,7 @@ except:
 
 VERSION_NUM = "2.2.2"
 # INFO_MESSAGE = 'Twitch Trivia Bot loaded. Version %s. Developed by cleartonic. %s' % (VERSION_NUM, random.randint(0,10000))
-INFO_MESSAGE = 'Twitch Trivia Bot loaded.'
+INFO_MESSAGE = 'Quizz Twitch chargé.'
 
 if not os.path.exists(os.path.abspath(os.path.join(THIS_FILEPATH,'config'))):
     os.makedirs(os.path.abspath(os.path.join(THIS_FILEPATH,'config')))
@@ -300,7 +301,7 @@ class MainWindow(QWidget):
                     self.question_no_variable_text.setVisible(True)
                     self.category_variable_text.setText(self.tb.active_session.active_question.category)
                     self.question_variable_text.setText(self.tb.active_session.active_question.question)
-                    self.answer_variable_text.setText(', '.join(self.tb.active_session.active_question.answers))
+                    self.answer_variable_text.setText(', '.join([i for i in self.tb.active_session.active_question.answers if i]))
                     self.question_no_variable_text.setText(self.tb.active_session.report_question_numbers())
                 else:
                     self.category_variable_text.setVisible(False)
@@ -542,12 +543,12 @@ class TriviaBot(object):
             # setup
             try:
                 if self.active_session.question_count < 1:
-                    self.cb.send_message("No questions were loaded. Check log for issue reporting and restart the trivia bot.")
+                    self.cb.send_message("Aucune question n'a été chargée. Vérifiez le journal pour signaler les problèmes et redémarrez le bot de quiz.")
                 else:                    
                     if self.trivia_config['length'] == 'infinite':
-                        self.cb.send_message("Trivia has begun! Infinite question mode. Trivia will start in %s seconds." % (self.active_session.session_config['question_delay']))
+                        self.cb.send_message("Le quiz a commencé ! Mode de questions illimitées. Le quiz débutera dans %s secondes." % (self.active_session.session_config['question_delay']))
                     else:
-                        self.cb.send_message("Trivia has begun! Question Count: %s. Trivia will start in %s seconds." % (self.active_session.question_count, self.active_session.session_config['question_delay']))
+                        self.cb.send_message("Le quiz a commencé ! Nombre de questions : %s. Le quiz débutera dans %s secondes." % (self.active_session.question_count, self.active_session.session_config['question_delay']))
                     time.sleep(self.active_session.session_config['question_delay'])
                     # get first question, ask, then begin loop
                     self.active_session.trivia_active = True
@@ -585,7 +586,7 @@ class TriviaBot(object):
                 self.active_session = load_session
             
             logging.debug("Latest trivia session loaded.")
-            self.cb.send_message("Latest trivia session loaded. Beginning trivia...")
+            self.cb.send_message("La dernière session de trivia a été chargée. Début du quiz...")
             self.start_session(False)
             
         else:
@@ -596,7 +597,7 @@ class TriviaBot(object):
 
         
     def stop_bot(self):
-        self.cb.send_message("Ending trivia bot. See you next trivia session!")
+        self.cb.send_message("Fin du bot de Quizz. À la prochaine session!")
         self.valid = False
         try:
             self.active_session.valid = False
@@ -637,7 +638,7 @@ class TriviaBot(object):
                 if user:
                     self.active_session.check_user_score(user, from_trivia_bot=True)
                 else:
-                    self.cb.send_message("%s had no points in the last game." % (username))
+                    self.cb.send_message("%s n'a obtenu aucun point lors da dernière partie." % (username))
 
         
     def handle_active_session(self):
@@ -865,6 +866,7 @@ class Session(object):
         for i in chosen_idx:
             self.ss[i] = self.ts[i]
     def create_distributed_trivia_set(self):
+
     
         # with open('temp.pickle','rb') as p:
         #     data = pickle.load(p)
@@ -1090,9 +1092,9 @@ class Session(object):
     def check_user_score(self, user, from_trivia_bot = False):
         if not from_trivia_bot:
             if user.validate_message_time():
-                self.cb.send_message("User %s has %s points." % (user.username, user.points))
+                self.cb.send_message("%s a %s points." % (user.username, user.points))
         else:
-            self.cb.send_message("User %s had %s points last game." % (user.username, user.points))
+            self.cb.send_message("%s a eu %s points lors du dernier jeu." % (user.username, user.points))
         
     def check_top_3(self):
         user_dict = {}
@@ -1122,16 +1124,16 @@ class Session(object):
                 try:
                     if len(self.winners) > 1:
                         winners_string = ', '.join([i.username for i in self.winners])
-                        self.cb.send_message("Trivia is over - a tie between %s for %s points!" % (winners_string, self.winners[0].points))
+                        self.cb.send_message("Le quiz est terminé – égalité entre %s pour %s points !" % (winners_string, self.winners[0].points))
                     else:
                         winner = self.winners[0]
-                        self.cb.send_message("Trivia is over - %s wins with %s points!" % (winner.username, winner.points))
+                        self.cb.send_message("Le quiz est terminé – %s gagne avec %s points!" % (winner.username, winner.points))
                 except:
-                    self.cb.send_message("Error on calculating winners: %s" % (self.winners))
+                    self.cb.send_message("Erreur lors du calcul des gagnants : %s" % (self.winners))
             else:
-                self.cb.send_message("Trivia is over - no winner found.")
+                self.cb.send_message("Le quiz est terminé – aucun gagnant trouvé.")
             time.sleep(.5)
-            self.cb.send_message("Thanks for playing!")
+            self.cb.send_message("Merci d'avoir joué !")
             self.trivia_status = "Finished"
             return True
         else:
@@ -1167,7 +1169,7 @@ class Session(object):
         
     def skip_question(self):
         try:
-            self.cb.send_message("Question being skipped. The answer was ** %s **." % self.active_question.answers[0])
+            self.cb.send_message("Question passée. La réponse était ** %s **." % self.active_question.answers[0])
             self.active_question.active = False
             self.answered_questions.append(self.active_question)
             self.questionno += 1
@@ -1218,7 +1220,7 @@ class Session(object):
                 self.answered_questions.append(self.active_question)
                 self.cb.send_message(self.active_question.answer_string_poll(first_user, self.active_question.point_dict[first_user], self.questionno))
             else:
-                self.cb.send_message("Question not answered in time. The answer was ** %s **." % self.active_question.answers[0])
+                self.cb.send_message("Question non répondue dans le délai imparti. La réponse était ** %s **." % self.active_question.answers[0])
 
             if self.active_question.session_config['mode'] == 'poll2':
                 
@@ -1234,7 +1236,7 @@ class Session(object):
                     except:
                         logging.debug("Error on second question poll, ignoring.")
                 else:
-                    self.cb.send_message("2nd category question not answered in time. The answer was ** %s **." % self.active_question.answers[1])
+                    self.cb.send_message("La question de la deuxième catégorie n'a pas été répondue dans le délai imparti. La réponse était ** %s **." % self.active_question.answers[1])
 
                 # then bonus points for both
                 
@@ -1249,7 +1251,7 @@ class Session(object):
                     if len(bonus_users) > 3:
                         self.cb.send_message("More than 3 players answered both prompts correctly, yielding +2 bonus points!")
                     else:
-                        self.cb.send_message("%s answered both prompts correctly, yielding +2 bonus points!" % ', '.join([user.username]))
+                        self.cb.send_message("Plus de 3 joueurs ont répondu correctement a la question, octroyant ainsi +2 points bonus !" % ', '.join([user.username]))
             self.questionno += 1
             self.questionasked = False            
     
@@ -1281,11 +1283,11 @@ class Session(object):
         if self.bonus_round:
             self.bonus_round = False
             self.active_question.point_value = 1
-            self.cb.send_message("Bonus round disabled. Trivia questions worth 1 point." )
+            self.cb.send_message("Manche bonus désactivée. Les questions de quiz valent 1 point." )
         else:
             self.bonus_round = True
             self.active_question.point_value = int(self.session_config['question_bonusvalue'])
-            self.cb.send_message("Bonus round is active! Bonus questions are worth ** %s ** points!" % (self.session_config['question_bonusvalue']))
+            self.cb.send_message("Manche bonus activée ! Les questions bonus valent ** %s ** points !" % (self.session_config['question_bonusvalue']))
     def handle_session_message(self,username, message):
         '''
         This is the main function that decides what to do based on the latest message that came in
@@ -1397,20 +1399,19 @@ class Question(object):
                 return False, None
             
     def answer_string(self,user, trivia_num):
-        return "%s answers question #%s correctly! The answer is ** %s ** with a %s point value. %s has %s points!" % (user.username, trivia_num ,self.answers[0], self.point_value, user.username, user.points)
-    # "PETSHOP %s answers question #%s correctly! The answer is ** %s ** with a %s point value. %s has %s points!" % (user.username, trivia_num ,self.answers[0], self.point_value, user.username, user.points)
+        return "%s répond correctement à la question n°%s ! La réponse est ** %s ** avec une valeur de %s point(s). %s a maintenant %s points !" % (user.username, trivia_num ,self.answers[0], self.point_value, user.username, user.points)
 
     def answer_string_poll(self,user, point_val, trivia_num):
         if self.answered_user_list_remaining:
-            return "%s answers question #%s first correctly! The answer is ** %s ** with a %s point value. %s has %s points! Others who answered: %s" % (user.username, trivia_num ,self.answers[0], point_val, user.username, user.points, ', '.join(self.answered_user_list_remaining))
+            return "%s répond en premier correctement à la question n°%s ! La réponse est ** %s ** avec une valeur de %s point(s). %s a maintenant %s points ! Autres qui ont répondu : %s" % (user.username, trivia_num ,self.answers[0], point_val, user.username, user.points, ', '.join(self.answered_user_list_remaining))
         else:
-            return "%s answers question #%s first correctly! The answer is ** %s ** with a %s point value. %s has %s points!" % (user.username, trivia_num ,self.answers[0], point_val, user.username, user.points)
+            return "%s répond en premier correctement à la question n°%s ! La réponse est ** %s ** avec une valeur de %s point(s). %s a maintenant %s points !" % (user.username, trivia_num ,self.answers[0], point_val, user.username, user.points)
 
     def answer_string_poll2(self,user, point_val, trivia_num):
         if self.answered_user_list_remaining:
-            return "%s answers question (2nd category) #%s first correctly! The answer is ** %s ** with a %s point value. %s has %s points! Others who answered: %s" % (user.username, trivia_num ,self.answers[1], point_val, user.username, user.points, ', '.join(self.answered_user_list_remaining))
+            return "%s répond en premier correctement à la question (2ème catégorie) n°%s ! La réponse est ** %s ** avec une valeur de %s point(s). %s a maintenant %s points ! Autres qui ont répondu : %s" % (user.username, trivia_num ,self.answers[1], point_val, user.username, user.points, ', '.join(self.answered_user_list_remaining))
         else:
-            return "%s answers question (2nd category) #%s first correctly! The answer is ** %s ** with a %s point value. %s has %s points!" % (user.username, trivia_num ,self.answers[1], point_val, user.username, user.points)
+            return "%s répond en premier correctement à la question (2ème catégorie) n°%s ! La réponse est ** %s ** avec une valeur de %s point(s). %s a maintenant %s points !" % (user.username, trivia_num ,self.answers[1], point_val, user.username, user.points)
 
     def set_hints(self):
     # type 0, replace 2 out of 3 chars with _
